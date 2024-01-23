@@ -42,98 +42,61 @@ function ml_sql_create_table()
     add_option('ml_sql_db_version', '1.0');
 }
 
+// เพิ่ม Bootstrap ให้ปลั๊กอิน
+add_action('wp_enqueue_scripts', 'ml_sql_enqueue');
+function ml_sql_enqueue()
+{
+    wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css');
+    wp_enqueue_style('ml-sql-css', plugin_dir_url(__FILE__) . 'css/style.css', array(), '1.0', 'all');
+    wp_enqueue_style('google-fonts-css', 'https://fonts.googleapis.com/css2?family=Kanit:wght@500&display=swap');
+    wp_enqueue_script('bootstrapcdn-js', 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js', array('jquery'), true);
+}
 
-//เพิ่มเมนูฝั่งแอดมิน
+
+
+// เพิ่มเมนูฝั่งแอดมิน
 function ml_sql_settings_page()
 {
-    add_menu_page('ML-SQL Settings', 'ML-SQL', 'manage_options', 'ml-sql-settings', 'ml_sql_settings_content');
+    add_menu_page('ML-SQL', 'ML-SQL', 'manage_options', 'ml-sql-settings', 'display_admin_ml_sql_page');
 }
 
 //เรียกหน้าเพิ่มวิดีโอฝั่งแอดมิน
-function ml_sql_settings_content()
+function display_admin_ml_sql_page()
 {
-?>
-    <div class="wrap">
-        <h1>ML-SQL Settings</h1>
-        <?php
-        // Include the admin template
-        include(plugin_dir_path(__FILE__) . 'admin/add_videos.php');
-        ?>
-    </div>
-<?php
+    // Include the admin template
+    include(plugin_dir_path(__FILE__) . 'admin/ml_sql_admin.php');
 }
 
 add_action('admin_menu', 'ml_sql_settings_page');
 
-function ml_sql_display_data_shortcode()
+function display_accordion_videos_block()
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ml_sql';
-
     $results = $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
-
     ob_start();
-?>
-    <div class="ml-sql-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Video Name</th>
-                    <th>Video Description</th>
-                    <th>Video Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($results as $row) : ?>
-
-                    <!-- show Card -->
-                    <div class="card">
-                        <div class="card-header" id="heading<?php echo esc_html($row['id']); ?>" data-toggle="collapse" data-target="#collapse<?php echo esc_html($row['id']); ?>" aria-expanded="true" aria-controls="collapse<?php echo esc_html($row['id']); ?>">
-                            <h5 class="mb-0">
-                                <button class="btn">
-                                    <?php echo esc_html($row['videoName']); ?>
-                                </button>
-                            </h5>
-                        </div>
-
-                        <div id="collapse<?php echo esc_html($row['id']); ?>" class="collapse" aria-labelledby="heading<?php echo esc_html($row['id']); ?>" data-parent="#accordion">
-                            <div class="card-body">
-                                <p><strong></strong> <?php echo esc_html($row['videoDesc']); ?></p>
-
-
-                                <div class="embed-responsive embed-responsive-16by9 text-center">
-                                    <style>
-                                        @media (max-width: 767px) {
-
-                                            /* ถ้าขนาดหน้าจอเป็นมือถือ */
-                                            #youtubeemb {
-                                                width: 100% !important;
-                                                height: 300px !important;
-                                            }
-                                        }
-
-                                        @media (min-width: 768px) {
-
-                                            /* ถ้าขนาดหน้าจอไม่ใช่มือถือ (Desktop, Tablet, ...) */
-                                            #youtubeemb {
-                                                width: 70%;
-                                                height: 480px !important;
-                                            }
-                                        }
-                                    </style>
-
-                                    <iframe class="embed-responsive-item" id="youtubeemb" src="<?php echo esc_url($row['videoLink']); ?>" allowfullscreen></iframe>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-<?php
+    include(plugin_dir_path(__FILE__) . 'blocks/accordion_videos_block.php');
     return ob_get_clean();
 }
 
-add_shortcode('ml_sql_display_data', 'ml_sql_display_data_shortcode');
+add_shortcode('accordion_videos', 'display_accordion_videos_block');
+
+// Register the admin post endpoint for deleting
+add_action('admin_post_ml_sql_delete', 'ml_sql_handle_delete');
+function ml_sql_handle_delete()
+{
+    // Check nonce
+    check_admin_referer('ml_sql_delete_nonce', '_wpnonce');
+
+    // Get the ID from the request
+    $video_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+    // Perform the delete operation (adjust based on your needs)
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ml_sql';
+    $wpdb->delete($table_name, array('id' => $video_id));
+
+    // Redirect after deletion
+    wp_redirect(admin_url('admin.php?page=ml-sql-settings'));
+    exit();
+}
