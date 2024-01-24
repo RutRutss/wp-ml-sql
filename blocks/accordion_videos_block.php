@@ -5,17 +5,15 @@
 
             <!-- show Card -->
             <div class="card">
-                <div class="card-header" id="heading<?php echo esc_html($row['id']); ?>" data-toggle="collapse" data-target="#collapse<?php echo esc_html($row['id']); ?>" aria-expanded="true" aria-controls="collapse<?php echo esc_html($row['id']); ?>">
-                    <h5 class="mb-0">
-                        <button class="btn">
+                <div class="card-header video-accordion-header" id="heading<?php echo esc_html($row['id']); ?>" data-toggle="collapse" data-target="#collapse<?php echo esc_html($row['id']); ?>" aria-expanded="true" aria-controls="collapse<?php echo esc_html($row['id']); ?>">
+                    <h5 class="mb-0 p-2 video-accordion-title">
                             <?php echo esc_html($row['videoName']); ?>
-                        </button>
                     </h5>
                 </div>
 
-                <div id="collapse<?php echo esc_html($row['id']); ?>" class="collapse" aria-labelledby="heading<?php echo esc_html($row['id']); ?>" data-parent="#accordion">
+                <div id="collapse<?php echo esc_html($row['id']); ?>" class="collapse video-accordion-content" aria-labelledby="heading<?php echo esc_html($row['id']); ?>" data-parent="#accordion">
                     <div class="card-body">
-                        <p><strong></strong> <?php echo esc_html($row['videoDesc']); ?></p>
+                        <p class="video-accordion-content-text"><strong></strong> <?php echo esc_html($row['videoDesc']); ?></p>
 
 
                         <div class="embed-responsive embed-responsive-16by9 text-center">

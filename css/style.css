@@ -2,3 +2,19 @@
     font-family: 'Kanit', sans-serif;
     font-size: 0.9rem;
 }
+
+.video-accordion-header{
+    background-color: #3eb589;
+}
+
+.video-accordion-content{
+    background-color: #5bcaa1;
+}
+
+.video-accordion-title{
+    color: white;
+}
+
+.video-accordion-content-text{
+    color: white;
+}

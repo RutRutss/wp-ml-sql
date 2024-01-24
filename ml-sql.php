@@ -4,7 +4,7 @@ Plugin Name: MicroLearning SQL
 Plugin URI: 
 Description: MicroLearning SQL
 Author: Wisarut Yuensuk
-Version: 1.0
+Version: 1.1
 Author URI: 
 */
 
@@ -50,6 +50,7 @@ function ml_sql_enqueue()
     wp_enqueue_style('ml-sql-css', plugin_dir_url(__FILE__) . 'css/style.css', array(), '1.0', 'all');
     wp_enqueue_style('google-fonts-css', 'https://fonts.googleapis.com/css2?family=Kanit:wght@500&display=swap');
     wp_enqueue_script('bootstrapcdn-js', 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js', array('jquery'), true);
+    wp_enqueue_script('toastify-js', 'https://cdn.jsdelivr.net/npm/toastify-js', array('jquery'), true);
 }
 
 

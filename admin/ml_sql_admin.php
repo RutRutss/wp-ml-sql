@@ -1,43 +1,29 @@
 <?php
 wp_head();
+require 'ml_sql_admin_func.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // ตรวจสอบและบันทึกข้อมูลเมื่อฟอร์มถูกส่งมา
     $videoName = sanitize_text_field($_POST["videoName"]);
     $videoDesc = sanitize_textarea_field($_POST["videoDesc"]);
     $videoLink = esc_url_raw($_POST["videoLink"]);
 
-    // ตรวจสอบว่าเป็นลิงก์ Youtube.com หรือไม่
-    $parsed_url = parse_url($videoLink);
-
-    if ($parsed_url && isset($parsed_url['host']) && $parsed_url['host'] === 'www.youtube.com') {
-        // ตรวจสอบรูปแบบของลิงก์
-        if (preg_match('/^https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)&/', $videoLink, $matches)) {
-            $videoId = $matches[1];
-
-            // สร้างลิงก์ใหม่
-            $videoLink = "https://www.youtube.com/embed/{$videoId}?si=OkLxKzy_RjpuxHbS";
-
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'ml_sql';
-
-            $wpdb->insert(
-                $table_name,
-                array(
-                    'videoName' => $videoName,
-                    'videoDesc' => $videoDesc,
-                    'videoLink' => $videoLink,
-                )
-            );
-            echo "บันทึกสำเร็จ";
-        } else {
-            // ลิงก์ไม่ได้ตรงกับรูปแบบที่ต้องการ
-            echo "ลิงก์ไม่ถูกต้อง";
-        }
+    // Check if $videoLink is a YouTube link
+    if (strpos($videoLink, 'https://www.youtube.com/watch?v=') === 0) {
+        $videoLink = convert_to_youtube_link($videoLink);
+        echo $videoLink;
+        save_contents_to_database($videoName, $videoDesc, $videoLink);
+    } elseif (strpos($videoLink, 'https://youtu.be/') === 0) {
+        $videoLink = convert_to_youtube_link($videoLink);
+        echo $videoLink;
+        save_contents_to_database($videoName, $videoDesc, $videoLink);
+    } elseif (strpos($videoLink, 'https://www.youtube.com/embed/') === 0) {
+        echo 'กรุณาใส่ลิงก์สำหรับดูเท่านั้น';
     } else {
-        // ไม่ใช่ลิงก์ Youtube.com
-        echo "ไม่ใช่ลิงก์ Youtube.com";
+        // The link is not from YouTube
+        echo 'กรุณากรอกลิงก์จากยูทูป';
     }
 }
+
 ?>
 
 <div id="primary" class="content-area ml-sql-font">
@@ -61,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                                 <div class="mb-3">
                                     <label for="videoDesc" class="form-label">รายละเอียด:</label>
-                                    <textarea name="videoDesc" class="form-control" required></textarea>
+                                    <textarea name="videoDesc" class="form-control"></textarea>
                                 </div>
 
                                 <div class="mb-3">
@@ -77,6 +63,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
         </article>
+
+        <div class="container">
+            <h3>Shortcode :</h3>
+            <p id="shortcode-accordion-videos">[accordion_videos]</p>
+            <button class="btn" onclick="copyToClipboard()">copy</button>
+            <script>
+                function copyToClipboard() {
+                    var shortcodeText = document.getElementById("shortcode-accordion-videos").innerText;
+
+                    var tempTextarea = document.createElement("textarea");
+                    tempTextarea.value = shortcodeText;
+                    document.body.appendChild(tempTextarea);
+
+                    tempTextarea.select();
+                    tempTextarea.setSelectionRange(0, 99999);
+                    document.execCommand("copy");
+
+                    document.body.removeChild(tempTextarea);
+                }
+            </script>
+        </div>
 
         <div class="container mt-3">
             <?php
